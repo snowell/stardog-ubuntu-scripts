@@ -1,0 +1,11 @@
+#!/bin/sh
+
+exec &>/tmp/s.out
+set -x
+
+mount -t proc proc $ROOTJAIL/proc
+
+/usr/sbin/chroot --userspec=$STARDOG_UID:$STARDOG_GID $ROOTJAIL $STARDOG_LOCATION/schild
+
+umount $ROOTJAIL/proc
+

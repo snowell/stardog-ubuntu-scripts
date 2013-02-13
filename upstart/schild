@@ -1,0 +1,22 @@
+#!/bin/sh
+
+export JAVA_HOME=/usr/lib/jvm/java-6-sun
+export STARDOG_HOME=$STARDOG_LOCATION
+
+function shutdownStardog {
+	$STARDOG_LOCATION/stardog-admin server stop
+}
+
+trap shutdownStardog HUP INT QUIT ABRT KILL ALRM TERM TSTP
+
+# Drop caches for running in limited-memory environments
+sync; echo 3 > /proc/sys/vm/drop_caches
+
+# Remove stardog lock (in case there was system failure)
+rm $STARDOG_LOCATION/system.lock
+
+# Execute the stardog-cli.jar directly so the wait command will have an infinite process to wait for
+java -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseParallelOldGC -XX:+UseCompressedOops -server -classpath $STARDOG_LOCATION/lib/stardog-cli.jar com.clarkparsia.stardog.cli.admin.CLI server start >> $STARDOG_LOCATION/stardog.log 2>&1 &
+
+wait $!
+
