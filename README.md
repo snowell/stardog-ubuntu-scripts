@@ -21,4 +21,4 @@ The scripts will expect that the following environment variables are set
 * **$ROOTJAIL** - The location of the root jail in which you wish to run the Stardog server
 * **$STARDOG_LOCATION** - The location of the Stardog installation, relative to $ROOTJAIL
 
-Simply place stardog.conf into the /etc/init directory, and schild and sparent into $ROOTJAIL/$STARDOG_LOCATION.  As root, run "_start stardog_" to start the server
+Simply place stardog.conf into the /etc/init directory, and schild and sparent into $ROOTJAIL/$STARDOG_LOCATION.  As root, run "start stardog" to start the server
