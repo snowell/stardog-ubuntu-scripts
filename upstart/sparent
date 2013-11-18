@@ -1,11 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
 exec &>/tmp/s.out
 set -x
 
-mount -t proc proc $ROOTJAIL/proc
+if [ -z "$ROOTJAIL" ]; then
+    /usr/sbin/chroot --userspec=$STARDOG_UID:$STARDOG_GID / $STARDOG_LOCATION/schild
+else
+    if [ "$ROOTJAIL" != "/" ]; then
+        mount -t proc proc $ROOTJAIL/proc
+    fi
 
-/usr/sbin/chroot --userspec=$STARDOG_UID:$STARDOG_GID $ROOTJAIL $STARDOG_LOCATION/schild
+    /usr/sbin/chroot --userspec=$STARDOG_UID:$STARDOG_GID $ROOTJAIL $STARDOG_LOCATION/schild
 
-umount $ROOTJAIL/proc
+    if [ "$ROOTJAIL" != "/" ]; then
+        umount $ROOTJAIL/proc
+    fi
+fi
 

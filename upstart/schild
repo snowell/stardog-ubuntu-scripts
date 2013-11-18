@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-export JAVA_HOME=/usr/lib/jvm/java-6-sun
-export STARDOG_HOME=$STARDOG_LOCATION
+if [ -z "$STARDOG_HOME" ]; then
+    export STARDOG_HOME=$STARDOG_LOCATION
+fi
 
 function shutdownStardog {
-	$STARDOG_LOCATION/stardog-admin server stop
+	$STARDOG_LOCATION/bin/stardog-admin server stop
 }
 
 trap shutdownStardog HUP INT QUIT ABRT KILL ALRM TERM TSTP
@@ -13,10 +14,15 @@ trap shutdownStardog HUP INT QUIT ABRT KILL ALRM TERM TSTP
 sync; echo 3 > /proc/sys/vm/drop_caches
 
 # Remove stardog lock (in case there was system failure)
-rm $STARDOG_LOCATION/system.lock
+if [ -f $STARDOG_HOME/system.lock ]; then
+    rm $STARDOG_HOME/system.lock
+fi
+
+CLASSPATH="${STARDOG_LOCATION}/client/api/*:${STARDOG_LOCATION}/client/cli/*:${STARDOG_LOCATION}/client/http/*:${STARDOG_LOCATION}/client/snarl/*:${STARDOG_LOCATION}/server/dbms/*:${STARDOG_LOCATION}/server/http/*:${STARDOG_LOCATION}/server/snarl/*"
 
 # Execute the stardog-cli.jar directly so the wait command will have an infinite process to wait for
-java -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseParallelOldGC -XX:+UseCompressedOops -server -classpath $STARDOG_LOCATION/lib/stardog-cli.jar com.clarkparsia.stardog.cli.admin.CLI server start >> $STARDOG_LOCATION/stardog.log 2>&1 &
+
+java -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseParallelOldGC -XX:+UseCompressedOops -server -classpath ${CLASSPATH} com.complexible.stardog.cli.admin.CLI server start >> $STARDOG_HOME/stardog.log 2>&1 &
 
 wait $!
 
